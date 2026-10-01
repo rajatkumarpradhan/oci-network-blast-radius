@@ -1,0 +1,36 @@
+{
+  "gateways": [
+    {"id": "igw", "type": "igw"},
+    {"id": "nat", "type": "nat"},
+    {"id": "lpg-ab", "type": "lpg"}
+  ],
+  "route_tables": [
+    {"id": "rt-public", "routes": [{"cidr": "0.0.0.0/0", "target": "igw"}]},
+    {"id": "rt-private", "routes": [{"cidr": "0.0.0.0/0", "target": "nat"}]},
+    {"id": "rt-isolated", "routes": []}
+  ],
+  "security_lists": [
+    {"id": "sl-web", "rules": [
+      {"direction": "ingress", "protocol": "tcp", "cidr": "0.0.0.0/0", "ports": [443, 443]},
+      {"direction": "ingress", "protocol": "tcp", "cidr": "0.0.0.0/0", "ports": [22, 22]},
+      {"direction": "egress", "protocol": "all", "cidr": "0.0.0.0/0"}]},
+    {"id": "sl-app", "rules": [
+      {"direction": "ingress", "protocol": "tcp", "cidr": "10.0.1.0/24", "ports": [8080, 8080]},
+      {"direction": "ingress", "protocol": "tcp", "cidr": "10.0.1.0/24", "ports": [22, 22]},
+      {"direction": "egress", "protocol": "all", "cidr": "0.0.0.0/0"}]},
+    {"id": "sl-db", "rules": [
+      {"direction": "ingress", "protocol": "tcp", "cidr": "10.0.2.0/24", "ports": [1521, 1521]},
+      {"direction": "egress", "protocol": "all", "cidr": "0.0.0.0/0"}]}
+  ],
+  "subnets": [
+    {"id": "sn-web", "name": "web", "cidr": "10.0.1.0/24", "public": true, "route_table": "rt-public", "security_lists": ["sl-web"]},
+    {"id": "sn-app", "name": "app", "cidr": "10.0.2.0/24", "public": false, "route_table": "rt-private", "security_lists": ["sl-app"]},
+    {"id": "sn-db", "name": "db", "cidr": "10.0.3.0/24", "public": false, "route_table": "rt-private", "security_lists": ["sl-db"]}
+  ],
+  "instances": [
+    {"id": "web-1", "name": "web-1", "subnet": "sn-web", "ip": "10.0.1.10", "public_ip": true},
+    {"id": "app-1", "name": "app-1", "subnet": "sn-app", "ip": "10.0.2.10"},
+    {"id": "app-2", "name": "app-2", "subnet": "sn-app", "ip": "10.0.2.11"},
+    {"id": "db-1", "name": "db-1", "subnet": "sn-db", "ip": "10.0.3.10", "tags": {"sensitivity": "high"}}
+  ]
+}
