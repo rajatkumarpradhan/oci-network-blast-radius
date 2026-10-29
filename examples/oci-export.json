@@ -1,0 +1,53 @@
+{
+  "vcns": [{"id": "ocid1.vcn.oc1..vcnmain", "cidr-blocks": ["10.0.0.0/16"]}],
+  "internet-gateways": [{"id": "ocid1.internetgateway.oc1..igw"}],
+  "nat-gateways": [{"id": "ocid1.natgateway.oc1..nat"}],
+  "service-gateways": [{"id": "ocid1.servicegateway.oc1..sgw"}],
+  "route-tables": [
+    {"id": "ocid1.routetable.oc1..rtpub", "route-rules": [
+      {"destination": "0.0.0.0/0", "network-entity-id": "ocid1.internetgateway.oc1..igw"}]},
+    {"id": "ocid1.routetable.oc1..rtpriv", "route-rules": [
+      {"destination": "0.0.0.0/0", "network-entity-id": "ocid1.natgateway.oc1..nat"},
+      {"destination": "all-bom-services-in-oracle-services-network", "network-entity-id": "ocid1.servicegateway.oc1..sgw"}]}
+  ],
+  "security-lists": [
+    {"id": "ocid1.securitylist.oc1..slweb", "ingress-security-rules": [
+      {"protocol": "6", "source": "0.0.0.0/0", "source-type": "CIDR_BLOCK", "tcp-options": {"destination-port-range": {"min": 443, "max": 443}}}],
+     "egress-security-rules": [
+      {"protocol": "all", "destination": "0.0.0.0/0", "destination-type": "CIDR_BLOCK"}]},
+    {"id": "ocid1.securitylist.oc1..slapp", "ingress-security-rules": [
+      {"protocol": "6", "source": "10.0.1.0/24", "source-type": "CIDR_BLOCK", "tcp-options": {"destination-port-range": {"min": 8080, "max": 8080}}}],
+     "egress-security-rules": [
+      {"protocol": "all", "destination": "0.0.0.0/0", "destination-type": "CIDR_BLOCK"},
+      {"protocol": "6", "destination": "all-bom-services-in-oracle-services-network", "destination-type": "SERVICE_CIDR_BLOCK"}]}
+  ],
+  "network-security-groups": [
+    {"id": "ocid1.networksecuritygroup.oc1..nsgapp", "display-name": "app-tier"},
+    {"id": "ocid1.networksecuritygroup.oc1..nsgdb", "display-name": "db-tier"}
+  ],
+  "nsg-rules": [
+    {"nsg-id": "ocid1.networksecuritygroup.oc1..nsgdb", "direction": "INGRESS", "protocol": "6",
+     "source": "ocid1.networksecuritygroup.oc1..nsgapp", "source-type": "NETWORK_SECURITY_GROUP",
+     "tcp-options": {"destination-port-range": {"min": 1521, "max": 1521}}},
+    {"nsg-id": "ocid1.networksecuritygroup.oc1..nsgapp", "direction": "EGRESS", "protocol": "6",
+     "destination": "ocid1.networksecuritygroup.oc1..nsgdb", "destination-type": "NETWORK_SECURITY_GROUP",
+     "tcp-options": {"destination-port-range": {"min": 1521, "max": 1521}}}
+  ],
+  "subnets": [
+    {"id": "ocid1.subnet.oc1..snweb", "display-name": "web", "cidr-block": "10.0.1.0/24",
+     "prohibit-public-ip-on-vnic": false, "route-table-id": "ocid1.routetable.oc1..rtpub",
+     "security-list-ids": ["ocid1.securitylist.oc1..slweb"], "vcn-id": "ocid1.vcn.oc1..vcnmain"},
+    {"id": "ocid1.subnet.oc1..snapp", "display-name": "app", "cidr-block": "10.0.2.0/24",
+     "prohibit-public-ip-on-vnic": true, "route-table-id": "ocid1.routetable.oc1..rtpriv",
+     "security-list-ids": ["ocid1.securitylist.oc1..slapp"], "vcn-id": "ocid1.vcn.oc1..vcnmain"}
+  ],
+  "vnics": [
+    {"id": "ocid1.vnic.oc1..web1", "display-name": "web-1", "subnet-id": "ocid1.subnet.oc1..snweb",
+     "private-ip": "10.0.1.10", "public-ip": "129.153.0.10", "nsg-ids": []},
+    {"id": "ocid1.vnic.oc1..app1", "display-name": "app-1", "subnet-id": "ocid1.subnet.oc1..snapp",
+     "private-ip": "10.0.2.10", "nsg-ids": ["ocid1.networksecuritygroup.oc1..nsgapp"]},
+    {"id": "ocid1.vnic.oc1..db1", "display-name": "db-1", "subnet-id": "ocid1.subnet.oc1..snapp",
+     "private-ip": "10.0.2.20", "nsg-ids": ["ocid1.networksecuritygroup.oc1..nsgdb"],
+     "freeform-tags": {"sensitivity": "high"}}
+  ]
+}
