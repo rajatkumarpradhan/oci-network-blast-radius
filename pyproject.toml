@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "oci-network-blast-radius"
+version = "0.2.0"
+description = "Offline OCI network blast-radius analysis on synthetic exported data"
+requires-python = ">=3.10"
+readme = "README.md"
+
+[project.scripts]
+oci-blast-radius = "oci_blast_radius.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
