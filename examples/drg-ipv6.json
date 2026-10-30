@@ -1,0 +1,39 @@
+{
+  "gateways": [
+    {"id": "drg-1", "type": "drg",
+     "attachments": ["vcn-a", "vcn-b"],
+     "propagations": [
+       {"from": "vcn-b", "to": "vcn-a", "cidr": "10.2.0.0/16"},
+       {"from": "vcn-a", "to": "vcn-b", "cidr": "10.1.0.0/16"}
+     ]},
+    {"id": "igw-c", "type": "igw"}
+  ],
+  "route_tables": [
+    {"id": "rt-a", "routes": [{"cidr": "10.2.0.0/16", "target": "drg-1"}]},
+    {"id": "rt-b", "routes": [{"cidr": "10.1.0.0/16", "target": "drg-1"}]},
+    {"id": "rt-c", "routes": [{"cidr": "::/0", "target": "igw-c"}]}
+  ],
+  "security_lists": [
+    {"id": "sl-a", "rules": [
+      {"direction": "egress", "protocol": "tcp", "cidr": "10.2.1.0/24", "ports": [5432, 5432], "stateless": true}
+    ]},
+    {"id": "sl-b", "rules": [
+      {"direction": "ingress", "protocol": "tcp", "cidr": "10.1.1.0/24", "ports": [5432, 5432], "stateless": true}
+    ]},
+    {"id": "sl-c", "rules": [
+      {"direction": "ingress", "protocol": "tcp", "cidr": "::/0", "ports": [443, 443]},
+      {"direction": "egress", "protocol": "all", "cidr": "::/0"}
+    ]}
+  ],
+  "nsgs": [],
+  "subnets": [
+    {"id": "sn-a", "name": "app-a", "cidr": "10.1.1.0/24", "public": false, "route_table": "rt-a", "security_lists": ["sl-a"], "vcn": "vcn-a"},
+    {"id": "sn-b", "name": "db-b", "cidr": "10.2.1.0/24", "public": false, "route_table": "rt-b", "security_lists": ["sl-b"], "vcn": "vcn-b"},
+    {"id": "sn-c", "name": "edge-c", "cidr": "fd00:1::/64", "public": true, "route_table": "rt-c", "security_lists": ["sl-c"], "vcn": "vcn-c"}
+  ],
+  "instances": [
+    {"id": "app-a", "name": "app-a", "subnet": "sn-a", "ip": "10.1.1.10"},
+    {"id": "db-b", "name": "db-b", "subnet": "sn-b", "ip": "10.2.1.20", "tags": {"sensitivity": "high"}},
+    {"id": "edge-c", "name": "edge-c", "subnet": "sn-c", "ip": "fd00:1::10", "public_ip": true}
+  ]
+}
